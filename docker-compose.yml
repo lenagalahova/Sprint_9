@@ -1,0 +1,57 @@
+# Файл docker-compose.yml
+# Перечень контейнеров
+services:
+  # Имя и описание первого контейнера; имя выбирает разработчик. 
+  # Это контейнер селеноида
+  selenoid:
+    # Из какого образа запустить контейнер:
+    image: aerokube/selenoid:latest
+    # Как назвать контейнер:
+    container_name: selenoid
+    platform: linux/amd64   
+    # Порты для работы:
+    ports:
+      - "4444:4444"
+    # Настройка сети для взаимодействия контейнеров
+    networks:
+      - selenoid
+    # Какой volume подключить для этого контейнера
+    volumes:
+      - "./config.json:/etc/selenoid/config.json" #тут должен лежать config.json с настройками браузера
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      - DOCKER_API_VERSION=1.40
+    command: [ "-conf", "/etc/selenoid/config.json", "-container-network", "selenoid" ]
+
+  # Имя и описание контейнера ui для селеноида
+  selenoid-ui:
+    image: "aerokube/selenoid-ui:latest"
+    container_name: selenoid-ui
+    platform: linux/amd64
+    links:
+      - selenoid
+    ports:
+      - "8081:8080"
+    networks:
+      - selenoid
+    command: [ "--selenoid-uri", "http://selenoid:4444" ]
+
+  test:
+    build: .
+    image: "foodgram"
+    container_name: foodgram-tests
+    # Какие контейнеры нужно запустить до старта этого контейнера:
+    depends_on:
+      - selenoid
+    networks:
+      - selenoid
+    volumes:
+      - ./allure-results:/app/allure-results
+      # Монтируем текущую папку в контейнер
+      - .:/app
+    command: sh -c "sleep 10 && python3 -m pytest tests/"
+
+# Регистрация новой сети:
+networks:
+  selenoid:
+    name: selenoid
