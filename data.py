@@ -1,0 +1,12 @@
+URL = "https://foodgram-frontend-1.foodgram.education-services.ru/signin"
+name = "Елена"
+last_name = "Галахова"
+email = "galahova_elena@mail.ru"
+password = "123456qwerty123456"
+
+name_recipe = "Омлет"
+ingedient = "яйца"
+ingedient_count = "120"
+time_to_create = "15"
+description = "Омлет из пары яиц, вкусно и быстро"
+image_path = "/app/assets/omlet.jpg"
